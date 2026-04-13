@@ -10,8 +10,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-key-lokal")
-DEBUG = os.getenv("DEBUG", "true").lower() == "true"
-ALLOWED_HOSTS = ["*"]
+DEBUG = os.getenv("DEBUG", "false").lower() == "true"
+ALLOWED_HOSTS = ["https://mademara-kotoba-kita-backend.hf.space"]
 
 INSTALLED_APPS = [
     "corsheaders",
