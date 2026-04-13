@@ -10,5 +10,6 @@ COPY --chown=user requirements.txt .
 RUN pip install --upgrade pip --no-cache-dir && \
     pip install --no-cache-dir --user -r requirements.txt
 COPY --chown=user . .
+RUN python manage.py collectstatic --noinput
 EXPOSE 7860
 CMD ["gunicorn", "core.wsgi:application", "--bind", "0.0.0.0:7860"]
