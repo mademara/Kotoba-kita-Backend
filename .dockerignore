@@ -1,0 +1,42 @@
+# Git
+.git
+.gitignore
+
+# Python cache & build
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache
+.cache/
+build/
+dist/
+*.egg-info/
+
+# Environments (PENTING)
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Docker
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Database lokal (jika ada sqlite atau dump file)
+*.sqlite3
+*.db
+dump.sql
+
+# Media & Static (biasanya di-handle volume, jangan masuk image)
+media/
+static/
+staticfiles/
+
+# OS & Editor
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp

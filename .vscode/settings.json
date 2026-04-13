@@ -1,0 +1,47 @@
+{
+  // ─── Format on Save ───────────────────────────────────────────
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    // Jalankan ESLint fix otomatis setiap save
+    "source.fixAll.eslint": "explicit"
+  },
+
+  // ─── Default Formatter per Bahasa ─────────────────────────────
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true,
+    "editor.tabSize": 4
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2
+  },
+
+  // ─── Ruff (Python) ────────────────────────────────────────────
+  "ruff.enable": true,
+  "ruff.fixAll": true,
+  "ruff.organizeImports": true,
+
+  // ─── ESLint ───────────────────────────────────────────────────
+  "eslint.enable": true,
+  "eslint.useFlatConfig": true, // wajib untuk eslint.config.js (flat config)
+  "eslint.validate": ["javascript", "javascriptreact"],
+
+  // ─── Line Endings ─────────────────────────────────────────────
+  "files.eol": "\n", // \n = LF
+
+  // ─── Encoding ─────────────────────────────────────────────────
+  "files.encoding": "utf8",
+
+  // ─── Trimming ─────────────────────────────────────────────────
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true
+}
