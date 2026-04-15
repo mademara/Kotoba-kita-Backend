@@ -68,7 +68,7 @@ Proyek ini hadir sebagai solusi lokal atas rendahnya penyerapan tenaga kerja Ind
 ## Setup Awal
 
 ```bash
-git clone <url-repo-backend> Kotoba-kita-Backend
+git clone https://github.com/mademara/Kotoba-kita-Backend
 cd Kotoba-kita-Backend
 
 # Install dependencies ke virtual env lokal (untuk editor/autocomplete)
@@ -77,7 +77,7 @@ pipenv install
 
 # Buat file .env
 cp .env.example .env
-# Minta kredensial .env ke Mar — jangan buat sendiri
+# Minta kredensial .env ke Mara — jangan buat sendiri
 ```
 
 ---
