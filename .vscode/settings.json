@@ -8,9 +8,13 @@
 
   // ─── Default Formatter per Bahasa ─────────────────────────────
   "[python]": {
+    "editor.tabSize": 4,
     "editor.defaultFormatter": "charliermarsh.ruff",
     "editor.formatOnSave": true,
-    "editor.tabSize": 4
+    "editor.codeActionsOnSave": {
+      "source.fixAll.ruff": "explicit",
+      "source.organizeImports.ruff": "explicit"
+    }
   },
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
@@ -27,8 +31,6 @@
 
   // ─── Ruff (Python) ────────────────────────────────────────────
   "ruff.enable": true,
-  "ruff.fixAll": true,
-  "ruff.organizeImports": true,
 
   // ─── ESLint ───────────────────────────────────────────────────
   "eslint.enable": true,
@@ -43,5 +45,6 @@
 
   // ─── Trimming ─────────────────────────────────────────────────
   "files.trimTrailingWhitespace": true,
-  "files.insertFinalNewline": true
+  "files.insertFinalNewline": true,
+  "python-envs.defaultEnvManager": "ms-python.python:pipenv"
 }

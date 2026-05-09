@@ -17,7 +17,21 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+from rest_framework_simplejwt.views import TokenBlacklistView, TokenRefreshView
+
+from apps.users.views import CustomTokenObtainPairView, RegisterView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("api/auth/login/", CustomTokenObtainPairView.as_view()),
+    path("api/auth/token/refresh/", TokenRefreshView.as_view()),
+    path("api/auth/logout/", TokenBlacklistView.as_view()),
+    path("api/auth/register/", RegisterView.as_view()),
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path(
+        "api/docs/",
+        SpectacularSwaggerView.as_view(url_name="schema"),
+        name="swagger-ui",
+    ),
 ]
