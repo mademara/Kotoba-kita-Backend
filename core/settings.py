@@ -14,6 +14,7 @@ DEBUG = os.getenv("DEBUG", "false").lower() == "true"
 ALLOWED_HOSTS = ["localhost", "mademara-kotoba-kita-backend.hf.space"]
 
 INSTALLED_APPS = [
+    "apps.words.apps.WordsConfig",
     "apps.users.apps.UsersConfig",
     "corsheaders",
     "whitenoise.runserver_nostatic",
@@ -23,6 +24,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django_filters",
     "rest_framework",
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
