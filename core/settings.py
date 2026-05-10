@@ -11,9 +11,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-key-lokal")
 DEBUG = os.getenv("DEBUG", "false").lower() == "true"
-ALLOWED_HOSTS = ["mademara-kotoba-kita-backend.hf.space"]
+ALLOWED_HOSTS = ["localhost", "mademara-kotoba-kita-backend.hf.space"]
 
 INSTALLED_APPS = [
+    "apps.users.apps.UsersConfig",
     "corsheaders",
     "whitenoise.runserver_nostatic",
     "django.contrib.admin",
@@ -25,6 +26,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
+    "drf_spectacular",
 ]
 
 MIDDLEWARE = [
@@ -61,8 +63,15 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
-
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Kotoba Kita API",
+    "DESCRIPTION": "API untuk aplikasi flashcard kosakata Jepang",
+    "VERSION": "1.0.0",
+    "SECURITY": [{"bearerAuth": []}],
+}
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(
         minutes=int(os.getenv("ACCESS_TOKEN_LIFETIME_MINUTES", 60))
@@ -98,6 +107,7 @@ else:
         }
     }
 
+AUTH_USER_MODEL = "users.User"
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
