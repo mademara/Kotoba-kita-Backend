@@ -14,6 +14,7 @@ DEBUG = os.getenv("DEBUG", "false").lower() == "true"
 ALLOWED_HOSTS = ["localhost", "mademara-kotoba-kita-backend.hf.space"]
 
 INSTALLED_APPS = [
+    "apps.decks.apps.DecksConfig",
     "apps.words.apps.WordsConfig",
     "apps.users.apps.UsersConfig",
     "corsheaders",
@@ -70,7 +71,15 @@ REST_FRAMEWORK = {
 }
 SPECTACULAR_SETTINGS = {
     "TITLE": "Kotoba Kita API",
-    "DESCRIPTION": "API untuk aplikasi flashcard kosakata Jepang",
+    "DESCRIPTION": (
+        "API backend untuk aplikasi flashcard kosakata bahasa Jepang **Kotoba Kita**.\n\n"
+        "**Autentikasi**\n\n"
+        "* Lakukan register terlebih dahulu, kemudian login untuk mendapatkan access token\n"
+        "* Sertakan token di header: `Authorization: Bearer <access_token>`\n"
+        "* Apabila access token kadaluarsa, lakukan refresh access token dengan refresh token untuk mendapatkan access token baru\n\n"
+        "**Sumber Data**\n\n"
+        "Data bersumber dari [JMdict-Simplified](https://github.com/scriptin/jmdict-simplified)."
+    ),
     "VERSION": "1.0.0",
     "SECURITY": [{"bearerAuth": []}],
 }

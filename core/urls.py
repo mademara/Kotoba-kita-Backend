@@ -17,18 +17,25 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import include, path
+from drf_spectacular.utils import extend_schema
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenBlacklistView, TokenRefreshView
 
+from apps.decks.urls import deck_router
 from apps.users.views import CustomTokenObtainPairView, RegisterView
 from apps.words.urls import router
 
+RefreshView = extend_schema(summary="Refresh access token")(TokenRefreshView)
+
+BlacklistView = extend_schema(summary="Logout dan blacklist refresh token")(
+    TokenBlacklistView
+)
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/auth/login/", CustomTokenObtainPairView.as_view()),
-    path("api/auth/token/refresh/", TokenRefreshView.as_view()),
-    path("api/auth/logout/", TokenBlacklistView.as_view()),
+    path("api/auth/token/refresh/", RefreshView.as_view()),
+    path("api/auth/logout/", BlacklistView.as_view()),
     path("api/auth/register/", RegisterView.as_view()),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path(
@@ -37,4 +44,5 @@ urlpatterns = [
         name="swagger-ui",
     ),
     path("api/", include(router.urls)),
+    path("api/", include(deck_router.urls)),
 ]
