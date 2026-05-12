@@ -35,6 +35,11 @@ class LoginResponseSerializer(serializers.Serializer):
     user = UserInfoSerializer()
 
 
+class RegisterResponseSerializer(serializers.Serializer):
+    message = serializers.CharField(default="Akun berhasil dibuat", read_only=True)
+    user = UserInfoSerializer()
+
+
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)
 

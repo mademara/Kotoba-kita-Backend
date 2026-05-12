@@ -10,6 +10,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import (
     CustomTokenObtainPairSerializer,
     LoginResponseSerializer,
+    RegisterResponseSerializer,
     RegisterSerializer,
 )
 
@@ -20,7 +21,10 @@ User = get_user_model()
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
-    @extend_schema(responses={200: LoginResponseSerializer})
+    @extend_schema(
+        responses={200: LoginResponseSerializer},
+        summary="Login dengan email dan password",
+    )
     def post(self, request, *args, **kwargs):
         return super().post(request, *args, **kwargs)
 
@@ -30,7 +34,7 @@ class RegisterView(APIView):
 
     @extend_schema(
         request=RegisterSerializer,
-        responses={201: None},
+        responses={201: RegisterResponseSerializer},
         summary="Daftarkan akun baru",
         auth=[],
     )
