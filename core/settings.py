@@ -14,6 +14,7 @@ DEBUG = os.getenv("DEBUG", "false").lower() == "true"
 ALLOWED_HOSTS = ["localhost", "mademara-kotoba-kita-backend.hf.space"]
 
 INSTALLED_APPS = [
+    "apps.flashcards.apps.FlashcardsConfig",
     "apps.decks.apps.DecksConfig",
     "apps.words.apps.WordsConfig",
     "apps.users.apps.UsersConfig",
