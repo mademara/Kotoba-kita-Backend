@@ -45,4 +45,5 @@ urlpatterns = [
     ),
     path("api/", include(router.urls)),
     path("api/", include(deck_router.urls)),
+    path("api/", include("apps.flashcards.urls")),
 ]
