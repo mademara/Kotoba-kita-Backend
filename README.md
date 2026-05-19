@@ -178,6 +178,7 @@ Kotoba-kita-Backend/
     users/          ← autentikasi dan user
     words/          ← data kosakata Jepang
     flashcards/     ← FSRS spaced repetition
+    decks/          ← deck sebagai sistem klasifikasi minat word yang tersedia
   core/             ← settings, urls, wsgi
   docker-compose.yml
   Dockerfile.dev
