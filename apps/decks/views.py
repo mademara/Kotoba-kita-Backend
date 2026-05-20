@@ -1,9 +1,11 @@
 from django.db.models import Count, IntegerField, Q, Value
 from django.shortcuts import render
+from django.utils import timezone
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import viewsets
 from rest_framework.exceptions import PermissionDenied
 
+from ..flashcards.models import Flashcard
 from .models import Deck
 from .serializers import DeckDetailSerializer, DeckListSerializer
 
@@ -20,16 +22,25 @@ class DecksViewSet(viewsets.ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete", "head", "options"]
 
     def get_queryset(self):
-
         user = self.request.user
+        now = timezone.now()
+
         queryset = (
             Deck.objects.filter(Q(is_default=True) | Q(owner=user))
-            .annotate(
-                word_count=Count("words"),
-                due_count=Value(0, output_field=IntegerField()),
-            )
+            .annotate(word_count=Count("words"))
             .prefetch_related("words")
         )
+
+        due_word_ids = set(
+            Flashcard.objects.filter(
+                user=user,
+                due__lte=now,
+            ).values_list("word_id", flat=True)
+        )
+
+        for deck in queryset:
+            deck_word_ids = {w.id for w in deck.words.all()}
+            deck.due_count = len(deck_word_ids & due_word_ids)
 
         return queryset
 
@@ -56,4 +67,4 @@ class DecksViewSet(viewsets.ModelViewSet):
         if instance.owner != self.request.user:
             raise PermissionDenied("Anda tidak memiliki izin menghapus deck ini.")
 
-        instance.delete()
+        super().perform_destroy(instance)
