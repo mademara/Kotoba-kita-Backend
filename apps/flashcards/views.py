@@ -1,7 +1,10 @@
+import math
 import random
+from datetime import timedelta
 
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Avg, Count, Min, Q
+from django.db.models.functions import TruncDate
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
@@ -10,8 +13,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from ..decks.models import Deck
+from ..words.models import Word
 from .models import Flashcard
 from .serializers import (
+    HomeStatsSerializer,
     StudyResponseSerializer,
     StudySessionSerializer,
     SubmitAnswerSerializer,
@@ -28,8 +33,7 @@ class GenerateQuestionsView(APIView):
     def get(self, request: Request, deck_id):
         try:
             deck = Deck.objects.prefetch_related("words").get(
-                Q(id=deck_id)
-                & (Q(owner=request.user) | Q(is_default=True) | Q(owner__isnull=True))
+                Q(id=deck_id) & (Q(owner=request.user) | Q(is_default=True))
             )
 
         except Deck.DoesNotExist:
@@ -140,3 +144,70 @@ class SubmitAnswerView(APIView):
         return Response(
             {"word_id": question_word_id, "next_due": card.due, "is_free_drill": False}
         )
+
+
+class HomeStatsView(APIView):
+    @extend_schema(
+        summary="Statistik homepage user",
+        responses={200: HomeStatsSerializer},
+    )
+    def get(self, request: Request):
+        user = request.user
+        now = timezone.now()
+
+        flashcards = Flashcard.objects.filter(user=user)
+        reviewed = flashcards.filter(last_review__isnull=False)
+        reviewed_count = reviewed.count()
+
+        if reviewed_count > 0:
+            stable_count = reviewed.filter(state=2).count()
+            retention_rate = round((stable_count / reviewed_count) * 100, 1)
+        else:
+            retention_rate = None
+
+        avg_stability = flashcards.filter(stability__isnull=False).aggregate(
+            avg=Avg("stability")
+        )["avg"]
+        stability_days = round(avg_stability, 1) if avg_stability is not None else None
+
+        total_words = Word.objects.count()
+        n5_progress = (
+            round((reviewed_count / total_words) * 100, 1) if total_words > 0 else 0.0
+        )
+        end_of_today = now.replace(hour=23, minute=59, second=59, microsecond=999999)
+        today_cards = flashcards.filter(due__lte=end_of_today)
+        today_count = today_cards.count()
+
+        next_due_today = today_cards.aggregate(next=Min("due"))["next"]
+        if next_due_today is not None:
+            delta_seconds = (next_due_today - now).total_seconds()
+
+            next_due_minutes = max(0, math.ceil(delta_seconds / 60))
+        else:
+            next_due_minutes = None
+
+        start_of_tomorrow = end_of_today + timedelta(seconds=1)
+        week_ahead = now + timedelta(days=7)
+        upcoming_reviews = (
+            flashcards.filter(due__gte=start_of_tomorrow, due__lte=week_ahead)
+            .annotate(date=TruncDate("due"))
+            .values("date")
+            .annotate(count=Count("id"))
+            .order_by("date")
+        )
+
+        data = {
+            "retention_rate": retention_rate,
+            "stability_days": stability_days,
+            "n5_progress": n5_progress,
+            "upcoming_reviews": {
+                "today": {
+                    "next_due_minutes": next_due_minutes,
+                    "count": today_count,
+                },
+                "upcoming": list(upcoming_reviews),
+            },
+        }
+
+        serializer = HomeStatsSerializer(data)
+        return Response(serializer.data)
