@@ -35,13 +35,14 @@ class DeckListSerializer(serializers.ModelSerializer):
     def get_due_count(self, obj):
         user = self.context["request"].user
         now = timezone.now()
+        word_ids = obj.words.values_list("id", flat=True)
         return (
             Flashcard.objects.filter(
                 user=user,
-                word__decks=obj,
+                word_id__in=word_ids,
                 due__lte=now,
             )
-            .values("word")
+            .values("word_id")
             .distinct()
             .count()
         )
@@ -93,13 +94,14 @@ class DeckDetailSerializer(serializers.ModelSerializer):
     def get_due_count(self, obj):
         user = self.context["request"].user
         now = timezone.now()
+        word_ids = obj.words.values_list("id", flat=True)
         return (
             Flashcard.objects.filter(
                 user=user,
-                word__decks=obj,
+                word_id__in=word_ids,
                 due__lte=now,
             )
-            .values("word")
+            .values("word_id")
             .distinct()
             .count()
         )
