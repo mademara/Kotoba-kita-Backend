@@ -1,5 +1,7 @@
+from django.utils import timezone
 from rest_framework import serializers
 
+from ..flashcards.models import Flashcard
 from ..words.models import Word
 from ..words.serializers import WordSerializer
 from .models import Deck
@@ -7,7 +9,7 @@ from .models import Deck
 
 class DeckListSerializer(serializers.ModelSerializer):
     word_count = serializers.IntegerField(read_only=True)
-    due_count = serializers.IntegerField(read_only=True)
+    due_count = serializers.SerializerMethodField()
     is_default = serializers.BooleanField(read_only=True)
     word_ids = serializers.PrimaryKeyRelatedField(
         many=True,
@@ -30,13 +32,26 @@ class DeckListSerializer(serializers.ModelSerializer):
             "word_ids",
         ]
 
+    def get_due_count(self, obj):
+        user = self.context["request"].user
+        now = timezone.now()
+        return (
+            Flashcard.objects.filter(
+                user=user,
+                word__decks=obj,
+                due__lte=now,
+            )
+            .values("word")
+            .distinct()
+            .count()
+        )
+
     def validate_word_ids(self, value):
         if len(value) < 10:
             raise serializers.ValidationError("Deck harus berisi minimal 10 kata.")
         ids = [word.id for word in value]
         if len(ids) != len(set(ids)):
             raise serializers.ValidationError("Terdapat kata duplikat dalam daftar.")
-
         return value
 
     def create(self, validated_data):
@@ -59,7 +74,7 @@ class DeckListSerializer(serializers.ModelSerializer):
 class DeckDetailSerializer(serializers.ModelSerializer):
     words = WordSerializer(many=True, read_only=True)
     word_count = serializers.IntegerField(read_only=True)
-    due_count = serializers.IntegerField(read_only=True)
+    due_count = serializers.SerializerMethodField()
     is_default = serializers.BooleanField(read_only=True)
 
     class Meta:
@@ -74,3 +89,17 @@ class DeckDetailSerializer(serializers.ModelSerializer):
             "due_count",
             "words",
         ]
+
+    def get_due_count(self, obj):
+        user = self.context["request"].user
+        now = timezone.now()
+        return (
+            Flashcard.objects.filter(
+                user=user,
+                word__decks=obj,
+                due__lte=now,
+            )
+            .values("word")
+            .distinct()
+            .count()
+        )
