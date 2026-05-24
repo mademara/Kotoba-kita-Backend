@@ -33,6 +33,7 @@ class StudySessionSerializer(serializers.Serializer):
     deck_id = serializers.IntegerField()
     deck_title = serializers.CharField()
     total = serializers.IntegerField()
+    is_free_drill = serializers.BooleanField()
     words = WordlistStudySessionsSerializer(many=True)
 
 

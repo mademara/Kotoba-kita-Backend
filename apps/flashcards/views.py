@@ -24,7 +24,6 @@ from .serializers import (
 from .services import apply_review, get_or_create_flashcard, get_rating_from_response
 
 
-# Create your views here.
 class GenerateQuestionsView(APIView):
     @extend_schema(
         responses={200: StudySessionSerializer},
@@ -35,7 +34,6 @@ class GenerateQuestionsView(APIView):
             deck = Deck.objects.prefetch_related("words").get(
                 Q(id=deck_id) & (Q(owner=request.user) | Q(is_default=True))
             )
-
         except Deck.DoesNotExist:
             return Response(
                 {"message": "Deck tidak ditemukan atau Anda tidak memiliki akses."},
@@ -45,24 +43,47 @@ class GenerateQuestionsView(APIView):
         all_words = list(deck.words.all())
         if len(all_words) < 4:
             return Response(
-                {
-                    "message": "Deck harus berisi minimal 4 kata untuk memulai sesi belajar."
-                },
+                {"message": "Deck harus berisi minimal 4 kata untuk memulai sesi belajar."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         all_word_ids = [w.id for w in all_words]
-        due_flashcards = Flashcard.objects.filter(
-            user=request.user, word_id__in=all_word_ids, due__lte=timezone.now()
+        now = timezone.now()
+
+
+        due_word_ids = set(
+            Flashcard.objects.filter(
+                user=request.user,
+                word_id__in=all_word_ids,
+                due__lte=now,
+            ).values_list("word_id", flat=True)
         )
 
-        questions = []
-        if not due_flashcards.exists():
-            words_to_study = all_words[:20]
-        else:
-            due_word_ids = set(due_flashcards.values_list("word_id", flat=True))
-            words_to_study = [w for w in all_words if w.id in due_word_ids][:20]
 
+        reviewed_word_ids = set(
+            Flashcard.objects.filter(
+                user=request.user,
+                word_id__in=all_word_ids,
+            ).values_list("word_id", flat=True)
+        )
+
+
+        new_words = [w for w in all_words if w.id not in reviewed_word_ids]
+
+        has_due = len(due_word_ids) > 0
+        has_new = len(new_words) > 0
+        is_free_drill = not has_due and not has_new
+
+        if is_free_drill:
+
+            words_to_study = all_words[:20]
+            random.shuffle(words_to_study)
+        else:
+
+            due_words = [w for w in all_words if w.id in due_word_ids]
+            words_to_study = (due_words + new_words)[:20]
+
+        questions = []
         for word in words_to_study:
             distractors = random.sample([w for w in all_words if w.id != word.id], 3)
             choices = distractors + [word]
@@ -79,14 +100,13 @@ class GenerateQuestionsView(APIView):
                     ],
                 }
             )
-        if not due_flashcards.exists():
-            random.shuffle(questions)
+
         return Response(
             {
                 "deck_id": deck.id,
                 "deck_title": deck.title,
                 "total": len(questions),
-                "is_free_drill": not due_flashcards.exists(),
+                "is_free_drill": is_free_drill,
                 "words": questions,
             }
         )
@@ -108,7 +128,6 @@ class SubmitAnswerView(APIView):
         response_time_seconds = serializer.validated_data["response_time_seconds"]
 
         is_correct = question_word_id == answered_word_id
-
         rating = get_rating_from_response(is_correct, response_time_seconds)
         now = timezone.now()
 
@@ -118,8 +137,12 @@ class SubmitAnswerView(APIView):
             now=now,
         )
 
-        is_new_card = flashcard.last_review is None
-        if not is_new_card and flashcard.due > now:
+        is_new = flashcard.last_review is None
+        is_due = flashcard.due <= now
+
+        is_future_due = not is_new and not is_due
+
+        if is_future_due:
             return Response(
                 {
                     "word_id": question_word_id,
@@ -128,6 +151,7 @@ class SubmitAnswerView(APIView):
                 },
                 status=status.HTTP_200_OK,
             )
+
 
         try:
             with transaction.atomic():
@@ -174,6 +198,7 @@ class HomeStatsView(APIView):
         n5_progress = (
             round((reviewed_count / total_words) * 100, 1) if total_words > 0 else 0.0
         )
+
         end_of_today = now.replace(hour=23, minute=59, second=59, microsecond=999999)
         today_cards = flashcards.filter(due__lte=end_of_today)
         today_count = today_cards.count()
@@ -181,7 +206,6 @@ class HomeStatsView(APIView):
         next_due_today = today_cards.aggregate(next=Min("due"))["next"]
         if next_due_today is not None:
             delta_seconds = (next_due_today - now).total_seconds()
-
             next_due_minutes = max(0, math.ceil(delta_seconds / 60))
         else:
             next_due_minutes = None
