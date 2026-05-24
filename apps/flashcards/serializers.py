@@ -9,7 +9,12 @@ class SubmitAnswerSerializer(serializers.Serializer):
     response_time_seconds = serializers.IntegerField(min_value=0, max_value=20)
 
     def validate(self, data):
-        word_ids = {data["question_word_id"], data["answered_word_id"]}
+        answered_word_id = data["answered_word_id"]
+
+        if answered_word_id == 0:
+            return data
+
+        word_ids = {data["question_word_id"], answered_word_id}
         existing = Word.objects.filter(id__in=word_ids).count()
         if existing != len(word_ids):
             raise serializers.ValidationError("Salah satu word ID tidak valid.")
