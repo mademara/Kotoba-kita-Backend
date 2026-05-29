@@ -36,10 +36,11 @@ class DecksViewSet(viewsets.ModelViewSet):
         serializer.save(owner=self.request.user, is_default=False)
 
     def perform_update(self, serializer):
-        if self.get_object().is_default:
-            raise PermissionDenied("Deck default tidak boleh diubah.")
-        if self.get_object().owner != self.request.user:
-            raise PermissionDenied("Anda tidak memiliki izin mengubah deck ini.")
+        obj = self.get_object()
+        if obj.is_default:
+            raise PermissionDenied(...)
+        if obj.owner != self.request.user:
+            raise PermissionDenied(...)
         serializer.save()
 
     def perform_destroy(self, instance):
