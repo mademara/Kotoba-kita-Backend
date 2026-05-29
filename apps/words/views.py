@@ -17,7 +17,7 @@ class WordPagination(PageNumberPagination):
     retrieve=extend_schema(summary="Ambil detail kata (tunggal)"),
 )
 class WordView(viewsets.ReadOnlyModelViewSet):
-    queryset = Word.objects.all().order_by("id")
+    queryset = Word.objects.all().prefetch_related("deck_words").order_by("id")
     serializer_class = WordSerializer
     pagination_class = WordPagination
     filter_backends = [filters.SearchFilter]
