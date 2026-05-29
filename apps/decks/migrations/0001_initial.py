@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
                 ('is_default', models.BooleanField(default=False)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('owner', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='deck_owner', to=settings.AUTH_USER_MODEL)),
-                ('words', models.ManyToManyField(related_name='deck_words', to='words.word')),
+                ('words', models.ManyToManyField(related_name='deck_words', to='words.Word')),
             ],
         ),
     ]
