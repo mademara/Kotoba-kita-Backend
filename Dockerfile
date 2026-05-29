@@ -12,4 +12,4 @@ RUN pip install --upgrade pip --no-cache-dir && \
 COPY --chown=user . .
 RUN python manage.py collectstatic --noinput
 EXPOSE 7860
-CMD ["gunicorn", "core.wsgi:application", "--bind", "0.0.0.0:7860"]
+CMD ["sh", "-c", "python manage.py migrate --noinput && gunicorn core.wsgi:application --bind 0.0.0.0:7860"]
