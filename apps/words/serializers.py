@@ -18,9 +18,7 @@ class WordSerializer(serializers.ModelSerializer):
         else:
             queryset = queryset.filter(is_default=True)
 
-        return list(
-            queryset.values(id=models.F("id"), title=models.F("title")).distinct()
-        )
+        return list(queryset.values("id", "title").distinct())
 
     class Meta:
         model = Word
